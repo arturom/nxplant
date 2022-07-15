@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"os"
 
 	lib "github.com/arturom/nxplant/lib"
+	"github.com/arturom/nxplant/lib/osgi"
 )
 
 func readJSON(filePath string, obj interface{}) {
@@ -15,7 +16,21 @@ func readJSON(filePath string, obj interface{}) {
 	if err != nil {
 		panic(err)
 	}
-	json.Unmarshal(text, &obj)
+	err = json.Unmarshal(text, &obj)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func readXML(filePath string, obj interface{}) {
+	text, err := os.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+	err = xml.Unmarshal(text, &obj)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func readSchemas(filePath string) []lib.Schema {
@@ -30,6 +45,12 @@ func readDocTypes(filePath string) lib.DocTypesResponse {
 	return docTypesResponse
 }
 
+func readComponent(filePath string) osgi.Component {
+	component := osgi.Component{}
+	readXML(filePath, &component)
+	return component
+}
+
 func main() {
 	schemasFilePath := flag.String("schemas", "", "path to JSON file containing a list of schemas")
 	docTypesFilePath := flag.String("types", "", "Path to JSON file containing the document types")
@@ -37,8 +58,8 @@ func main() {
 	flag.Parse()
 
 	if *outputFilePath == "" {
-		flag.CommandLine.Usage()
-		panic("Missing parameters")
+		// flag.CommandLine.Usage()
+		// panic("Missing parameters")
 	}
 
 	renderOptions := (lib.RenderOptions{
@@ -46,7 +67,6 @@ func main() {
 	})
 
 	if *schemasFilePath != "" && *docTypesFilePath != "" {
-		fmt.Println("one")
 		schemas := readSchemas(*schemasFilePath)
 		docTypesResponse := readDocTypes(*docTypesFilePath)
 		result := lib.RenderSchemasAndDocTypes(schemas, docTypesResponse.DocTypes, renderOptions)
@@ -55,7 +75,6 @@ func main() {
 	}
 
 	if *schemasFilePath != "" {
-		fmt.Println("two")
 		schemas := readSchemas(*schemasFilePath)
 		result := lib.RenderDocSchemas(schemas)
 		ioutil.WriteFile(*outputFilePath, []byte(result), 0644)
@@ -63,19 +82,12 @@ func main() {
 	}
 
 	if *docTypesFilePath != "" {
-		fmt.Println("three")
 		docTypesResponse := readDocTypes(*docTypesFilePath)
 		result := lib.RenderDocTypes(docTypesResponse.DocTypes)
 		ioutil.WriteFile(*outputFilePath, []byte(result), 0644)
 		return
 	}
 
-	f, err := os.Create(*outputFilePath)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	_, err = f.WriteString("hello there\n")
-	f.WriteString("general kenobi\n")
-
+	component := readComponent("/Users/arturomejia/projects/nxplant/extensions.xml")
+	osgi.GenerateHierarchy(component)
 }
