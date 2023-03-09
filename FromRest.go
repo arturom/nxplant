@@ -1,4 +1,4 @@
-package nxplant
+package main
 
 import (
 	"fmt"
@@ -7,31 +7,31 @@ import (
 
 type FieldSet map[string]string
 
-type Schema struct {
+type RestSchema struct {
 	Name   string   `json:"name"`
 	Prefix string   `json:"@prefix"`
 	Fields FieldSet `json:"fields"`
 }
 
-type DocType struct {
+type RestDocType struct {
 	Parent  string   `json:"parent"`
 	Facets  []string `json:"facets"`
 	Schemas []string `json:"schemas"`
 }
 
-type DocTypesMap = map[string]DocType
+type DocTypesMap = map[string]RestDocType
 
 type DocTypesResponse struct {
 	DocTypes DocTypesMap `json:"doctypes"`
 }
 
-type SchemasMap = map[string]Schema
+type SchemasMap = map[string]RestSchema
 
 type RenderOptions struct {
 	ExcludeOrphanSchemas bool
 }
 
-func RenderSchema(sb *strings.Builder, schema Schema) error {
+func RenderSchema(sb *strings.Builder, schema RestSchema) error {
 	if _, err := sb.WriteString(fmt.Sprintf("abstract %s {\n", schema.Name)); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func RenderSchema(sb *strings.Builder, schema Schema) error {
 	return nil
 }
 
-func RenderSchemas(sb *strings.Builder, schemas []Schema) error {
+func RenderSchemas(sb *strings.Builder, schemas []RestSchema) error {
 	for _, schema := range schemas {
 		if err := RenderSchema(sb, schema); err != nil {
 			return err
@@ -58,14 +58,14 @@ func RenderSchemas(sb *strings.Builder, schemas []Schema) error {
 	return nil
 }
 
-func RenderDoctype(sb *strings.Builder, name string, doctype DocType) error {
+func RenderDoctype(sb *strings.Builder, name string, doctype RestDocType) error {
 	if _, err := sb.WriteString(fmt.Sprintf("class %s {\n}\n\n", name)); err != nil {
 		return err
 	}
 	return nil
 }
 
-func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType DocType) error {
+func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType RestDocType) error {
 	for _, schemaName := range docType.Schemas {
 		if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", schemaName, docTypeName)); err != nil {
 			return err
@@ -74,7 +74,7 @@ func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType Doc
 	return nil
 }
 
-func RenderDocTypeParentRelation(sb *strings.Builder, name string, docType DocType) error {
+func RenderDocTypeParentRelation(sb *strings.Builder, name string, docType RestDocType) error {
 	if docType.Parent == "None!!!" {
 		return nil
 	}
@@ -94,8 +94,8 @@ func getUsedSchemas(docTypes DocTypesMap) map[string]bool {
 	return result
 }
 
-func filterSchemas(schemas []Schema, usedSchemas map[string]bool) []Schema {
-	result := make([]Schema, len(usedSchemas))
+func filterSchemas(schemas []RestSchema, usedSchemas map[string]bool) []RestSchema {
+	result := make([]RestSchema, len(usedSchemas))
 	n := 0
 	for _, schema := range schemas {
 		exists, _ := usedSchemas[schema.Name]
@@ -107,7 +107,7 @@ func filterSchemas(schemas []Schema, usedSchemas map[string]bool) []Schema {
 	return result
 }
 
-func RenderDocSchemas(sb *strings.Builder, schemas []Schema) error {
+func RenderDocSchemas(sb *strings.Builder, schemas []RestSchema) error {
 	if _, err := sb.WriteString("@startuml schemas\n\n"); err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func RenderDocTypes(sb *strings.Builder, docTypes DocTypesMap) error {
 	return nil
 }
 
-func RenderSchemasAndDocTypes(sb *strings.Builder, schemas []Schema, docTypes DocTypesMap, opts RenderOptions) error {
+func RenderSchemasAndDocTypes(sb *strings.Builder, schemas []RestSchema, docTypes DocTypesMap, opts RenderOptions) error {
 	if _, err := sb.WriteString("@startuml schemasAndDocTypes\n\n"); err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package nxplant
+package main
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestRenderSchema(t *testing.T) {
-	userSchema := Schema{
+	userSchema := RestSchema{
 		Name:   "user",
 		Prefix: "user",
 		Fields: FieldSet{

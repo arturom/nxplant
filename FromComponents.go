@@ -1,4 +1,4 @@
-package osgi
+package main
 
 import (
 	"encoding/xml"
@@ -13,18 +13,18 @@ type Component struct {
 }
 
 type Extension struct {
-	XMLName  xml.Name  `xml:"extension"`
-	Target   string    `xml:"target,attr"`
-	Point    string    `xml:"point,attr"`
-	Schemas  []Schema  `xml:"schema"`
-	DocTypes []DocType `xml:"doctype"`
+	XMLName  xml.Name           `xml:"extension"`
+	Target   string             `xml:"target,attr"`
+	Point    string             `xml:"point,attr"`
+	Schemas  []ComponentSchema  `xml:"schema"`
+	DocTypes []ComponentDocType `xml:"doctype"`
 }
 
-type Schema struct {
+type ComponentSchema struct {
 	XMLName xml.Name `xml:"schema"`
 }
 
-type DocType struct {
+type ComponentDocType struct {
 	XMLName  xml.Name `xml:"doctype"`
 	Name     string   `xml:"name,attr"`
 	Extends  string   `xml:"extends,attr"`
