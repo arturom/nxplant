@@ -1,12 +1,9 @@
 package nxplant
 
-import "fmt"
-
-func parse() {
-	fmt.Println("")
-}
-
-const NL = "\n"
+import (
+	"fmt"
+	"strings"
+)
 
 type FieldSet map[string]string
 
@@ -34,45 +31,57 @@ type RenderOptions struct {
 	ExcludeOrphanSchemas bool
 }
 
-func RenderSchema(schema Schema) string {
-	result := fmt.Sprintf("abstract %s {\n", schema.Name)
+func RenderSchema(sb *strings.Builder, schema Schema) error {
+	if _, err := sb.WriteString(fmt.Sprintf("abstract %s {\n", schema.Name)); err != nil {
+		return err
+	}
 	for fieldName, fieldType := range schema.Fields {
 		if fieldType == "" {
 			fieldType = "nested"
 		}
-		result += fmt.Sprintf("   %s %s\n", fieldType, fieldName)
+		if _, err := sb.WriteString(fmt.Sprintf("   %s %s\n", fieldType, fieldName)); err != nil {
+			return err
+		}
 	}
-	result += "}\n\n"
-	return result
+	if _, err := sb.WriteString("}\n\n"); err != nil {
+		return err
+	}
+	return nil
 }
 
-func RenderSchemas(schemas []Schema) string {
-	result := ""
+func RenderSchemas(sb *strings.Builder, schemas []Schema) error {
 	for _, schema := range schemas {
-		result += RenderSchema(schema)
+		if err := RenderSchema(sb, schema); err != nil {
+			return err
+		}
 	}
-	return result
+	return nil
 }
 
-func RenderDoctype(name string, doctype DocType) string {
-	result := fmt.Sprintf("class %s {\n", name)
-	result += "}\n"
-	return result
+func RenderDoctype(sb *strings.Builder, name string, doctype DocType) error {
+	if _, err := sb.WriteString(fmt.Sprintf("class %s {\n}\n\n", name)); err != nil {
+		return err
+	}
+	return nil
 }
 
-func RenderDocTypeRelations(docTypeName string, docType DocType) string {
-	result := ""
+func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType DocType) error {
 	for _, schemaName := range docType.Schemas {
-		result += fmt.Sprintf("%s <|-- %s\n", schemaName, docTypeName)
+		if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", schemaName, docTypeName)); err != nil {
+			return err
+		}
 	}
-	return result
+	return nil
 }
 
-func RenderDocTypeParentRelation(name string, docType DocType) string {
+func RenderDocTypeParentRelation(sb *strings.Builder, name string, docType DocType) error {
 	if docType.Parent == "None!!!" {
-		return ""
+		return nil
 	}
-	return fmt.Sprintf("%s <|-- %s\n", docType.Parent, name)
+	if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", docType.Parent, name)); err != nil {
+		return err
+	}
+	return nil
 }
 
 func getUsedSchemas(docTypes DocTypesMap) map[string]bool {
@@ -98,50 +107,65 @@ func filterSchemas(schemas []Schema, usedSchemas map[string]bool) []Schema {
 	return result
 }
 
-func RenderDocSchemas(schemas []Schema) string {
-	result := "@startuml schemas\n\n"
-	result += RenderSchemas(schemas)
-	result += "@enduml\n"
-
-	return result
+func RenderDocSchemas(sb *strings.Builder, schemas []Schema) error {
+	if _, err := sb.WriteString("@startuml schemas\n\n"); err != nil {
+		return err
+	}
+	RenderSchemas(sb, schemas)
+	if _, err := sb.WriteString("@enduml\n"); err != nil {
+		return err
+	}
+	return nil
 }
 
-func RenderDocTypes(docTypes DocTypesMap) string {
-	result := "@startuml docTypes\n\n"
-
-	for docTypeName, docType := range docTypes {
-		result += RenderDoctype(docTypeName, docType)
-		result += NL
+func RenderDocTypes(sb *strings.Builder, docTypes DocTypesMap) error {
+	if _, err := sb.WriteString("@startuml docTypes\n\n"); err != nil {
+		return err
 	}
 
 	for docTypeName, docType := range docTypes {
-		result += RenderDocTypeParentRelation(docTypeName, docType)
+		if err := RenderDoctype(sb, docTypeName, docType); err != nil {
+			return err
+		}
 	}
-	result += NL
-	result += "@enduml\n"
-	return result
+
+	for docTypeName, docType := range docTypes {
+		if err := RenderDocTypeParentRelation(sb, docTypeName, docType); err != nil {
+			return err
+		}
+	}
+	if _, err := sb.WriteString("\n@enduml\n"); err != nil {
+		return err
+	}
+	return nil
 }
 
-func RenderSchemasAndDocTypes(schemas []Schema, docTypes DocTypesMap, opts RenderOptions) string {
-	result := "@startuml schemasAndDocTypes\n\n"
+func RenderSchemasAndDocTypes(sb *strings.Builder, schemas []Schema, docTypes DocTypesMap, opts RenderOptions) error {
+	if _, err := sb.WriteString("@startuml schemasAndDocTypes\n\n"); err != nil {
+		return err
+	}
 	if opts.ExcludeOrphanSchemas {
 		schemas = filterSchemas(schemas, getUsedSchemas(docTypes))
 	}
-	result += RenderSchemas(schemas)
-	result += NL
-	for docTypeName, docType := range docTypes {
-		result += RenderDoctype(docTypeName, docType)
-		result += NL
-		result += RenderDocTypeRelations(docTypeName, docType)
-		result += NL
+	if err := RenderSchemas(sb, schemas); err != nil {
+		return nil
 	}
-	result += NL
-
 	for docTypeName, docType := range docTypes {
-		result += RenderDocTypeParentRelation(docTypeName, docType)
+		if err := RenderDoctype(sb, docTypeName, docType); err != nil {
+			return err
+		}
+		if err := RenderDocTypeRelations(sb, docTypeName, docType); err != nil {
+			return err
+		}
 	}
-	result += NL
+	for docTypeName, docType := range docTypes {
+		if err := RenderDocTypeParentRelation(sb, docTypeName, docType); err != nil {
+			return err
+		}
+	}
 
-	result += "@enduml\n"
-	return result
+	if _, err := sb.WriteString("@enduml\n"); err != nil {
+		return err
+	}
+	return nil
 }

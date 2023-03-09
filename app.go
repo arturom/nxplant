@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"flag"
-	"io/ioutil"
+	"fmt"
 	"os"
+	"strings"
 
 	lib "github.com/arturom/nxplant/lib"
 	"github.com/arturom/nxplant/lib/osgi"
 )
 
-func readJSON(filePath string, obj interface{}) {
+func readJsonFile(filePath string, obj interface{}) {
 	text, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
@@ -22,7 +23,7 @@ func readJSON(filePath string, obj interface{}) {
 	}
 }
 
-func readXML(filePath string, obj interface{}) {
+func readXmlFile(filePath string, obj interface{}) {
 	text, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
@@ -35,59 +36,57 @@ func readXML(filePath string, obj interface{}) {
 
 func readSchemas(filePath string) []lib.Schema {
 	schemas := make([]lib.Schema, 0)
-	readJSON(filePath, &schemas)
+	readJsonFile(filePath, &schemas)
 	return schemas
 }
 
 func readDocTypes(filePath string) lib.DocTypesResponse {
 	docTypesResponse := lib.DocTypesResponse{}
-	readJSON(filePath, &docTypesResponse)
+	readJsonFile(filePath, &docTypesResponse)
 	return docTypesResponse
 }
 
 func readComponent(filePath string) osgi.Component {
 	component := osgi.Component{}
-	readXML(filePath, &component)
+	readXmlFile(filePath, &component)
 	return component
 }
 
 func main() {
+	extensionsFilePath := flag.String("extensions", "", "path to XML file containing extensions")
 	schemasFilePath := flag.String("schemas", "", "path to JSON file containing a list of schemas")
 	docTypesFilePath := flag.String("types", "", "Path to JSON file containing the document types")
-	outputFilePath := flag.String("out", "", "Path to file output")
 	flag.Parse()
 
-	if *outputFilePath == "" {
-		// flag.CommandLine.Usage()
-		// panic("Missing parameters")
-	}
+	sb := &strings.Builder{}
 
-	renderOptions := (lib.RenderOptions{
-		ExcludeOrphanSchemas: true,
-	})
-
-	if *schemasFilePath != "" && *docTypesFilePath != "" {
+	if *extensionsFilePath != "" {
+		component := readComponent(*extensionsFilePath)
+		if err := osgi.GenerateHierarchy(sb, component); err != nil {
+			panic(err)
+		}
+	} else if *schemasFilePath != "" && *docTypesFilePath != "" {
 		schemas := readSchemas(*schemasFilePath)
 		docTypesResponse := readDocTypes(*docTypesFilePath)
-		result := lib.RenderSchemasAndDocTypes(schemas, docTypesResponse.DocTypes, renderOptions)
-		ioutil.WriteFile(*outputFilePath, []byte(result), 0644)
-		return
-	}
-
-	if *schemasFilePath != "" {
+		renderOptions := (lib.RenderOptions{
+			ExcludeOrphanSchemas: true,
+		})
+		if err := lib.RenderSchemasAndDocTypes(sb, schemas, docTypesResponse.DocTypes, renderOptions); err != nil {
+			panic(err)
+		}
+	} else if *schemasFilePath != "" {
 		schemas := readSchemas(*schemasFilePath)
-		result := lib.RenderDocSchemas(schemas)
-		ioutil.WriteFile(*outputFilePath, []byte(result), 0644)
-		return
-	}
-
-	if *docTypesFilePath != "" {
+		if err := lib.RenderDocSchemas(sb, schemas); err != nil {
+			panic(err)
+		}
+	} else if *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
-		result := lib.RenderDocTypes(docTypesResponse.DocTypes)
-		ioutil.WriteFile(*outputFilePath, []byte(result), 0644)
-		return
+		if err := lib.RenderDocTypes(sb, docTypesResponse.DocTypes); err != nil {
+			panic(err)
+		}
+	} else {
+		flag.Usage()
+		os.Exit(1)
 	}
-
-	component := readComponent("/Users/arturomejia/projects/nxplant/extensions.xml")
-	osgi.GenerateHierarchy(component)
+	fmt.Print(sb.String())
 }

@@ -2,6 +2,7 @@ package nxplant
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -14,6 +15,10 @@ func TestRenderSchema(t *testing.T) {
 			"email": "String",
 		},
 	}
-	result := RenderSchema(userSchema)
-	fmt.Println(result)
+	sb := &strings.Builder{}
+	err := RenderSchema(sb, userSchema)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(sb.String())
 }

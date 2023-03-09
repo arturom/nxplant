@@ -3,6 +3,7 @@ package osgi
 import (
 	"encoding/xml"
 	"fmt"
+	"strings"
 )
 
 type Component struct {
@@ -43,43 +44,62 @@ func ParseXML(filepath string) Component {
 	return component
 }
 
-func GenerateFolderStructure(component Component) {
+func GenerateFolderStructure(sb *strings.Builder, component Component) error {
 	for _, e := range component.Extensions {
 		if len(e.DocTypes) == 0 {
+			// exclude components that are not schema related
 			continue
 		}
-		fmt.Printf("extension: %s %s \n", e.Target, e.Point)
+		if _, err := sb.WriteString(fmt.Sprintf("extension: %s %s \n", e.Target, e.Point)); err != nil {
+			return err
+		}
 		for _, d := range e.DocTypes {
-			// fmt.Printf("- %s / %s / %v\n", d.Name, d.Extends, d.Append)
-			fmt.Printf("class %s\n", d.Name)
+			if _, err := sb.WriteString(fmt.Sprintf("class %s\n", d.Name)); err != nil {
+				return err
+			}
 			if d.Extends != "" {
-				fmt.Printf("%s <|-- %s\n", d.Name, d.Extends)
+
+				if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", d.Name, d.Extends)); err != nil {
+					return err
+				}
 			}
 			for _, s := range d.Subtypes.Types {
-				fmt.Printf("  - %s\n", s)
+				if _, err := sb.WriteString(fmt.Sprintf("  - %s\n", s)); err != nil {
+					return err
+				}
 			}
 		}
-		fmt.Println()
 	}
+	return nil
 }
 
-func GenerateHierarchy(component Component) {
-	fmt.Println(component.Name)
+func GenerateHierarchy(sb *strings.Builder, component Component) error {
+	if _, err := sb.WriteString(component.Name); err != nil {
+		return err
+	}
 	for _, e := range component.Extensions {
 		if len(e.DocTypes) == 0 {
 			continue
 		}
-		fmt.Printf("extension: %s %s \n", e.Target, e.Point)
+		if _, err := sb.WriteString(fmt.Sprintf("extension: %s %s \n", e.Target, e.Point)); err != nil {
+			return err
+		}
 		for _, d := range e.DocTypes {
 			// fmt.Printf("- %s / %s / %v\n", d.Name, d.Extends, d.Append)
-			fmt.Printf("class %s\n", d.Name)
+			if _, err := sb.WriteString(fmt.Sprintf("class %s\n", d.Name)); err != nil {
+				return err
+			}
 			if d.Extends != "" {
-				fmt.Printf("%s <|-- %s\n", d.Name, d.Extends)
+				if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", d.Name, d.Extends)); err != nil {
+					return err
+				}
 			}
 			for _, s := range d.Subtypes.Types {
-				fmt.Printf("  - %s\n", s)
+				if _, err := sb.WriteString(fmt.Sprintf("  - %s\n", s)); err != nil {
+					return err
+				}
 			}
 		}
-		fmt.Println()
 	}
+	return nil
 }
