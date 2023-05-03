@@ -31,8 +31,8 @@ func readXmlFile(filePath string, obj interface{}) {
 	}
 }
 
-func readSchemas(filePath string) []RestSchema {
-	schemas := make([]RestSchema, 0)
+func readSchemas(filePath string) SchemasResponse {
+	schemas := make(SchemasResponse, 0)
 	readJsonFile(filePath, &schemas)
 	return schemas
 }
@@ -49,39 +49,92 @@ func readComponent(filePath string) Component {
 	return component
 }
 
+func printDocumentation() {
+	// components folder structure
+	// components doc type inheritance
+	// rest doc type inheritance
+	// rest doc types and schemas
+	// rest doc types with fields
+	fmt.Fprintln(os.Stderr, "nxplant")
+	fmt.Fprintln(os.Stderr, "  A Diagram generator for a Nuxeo project data model")
+	fmt.Fprintln(os.Stderr)
+
+	fmt.Fprintln(os.Stderr, "Examples of usage:")
+	fmt.Fprintln(os.Stderr, "  nxplant --extensions extensions.xml")
+	fmt.Fprintln(os.Stderr, "  nxplant --schemas schemas.json --types types.json")
+	fmt.Fprintln(os.Stderr, "  nxplant --schemas schemas.json")
+	fmt.Fprintln(os.Stderr, "  nxplant --types types.json")
+	fmt.Fprintln(os.Stderr)
+}
+
+func writeDiagram(diagram Diagram) {
+	sb := &strings.Builder{}
+	if err := diagram.write(sb); err != nil {
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+	fmt.Print(sb.String())
+}
+
 func main() {
-	extensionsFilePath := flag.String("extensions", "", "path to XML file containing extensions")
-	schemasFilePath := flag.String("schemas", "", "path to JSON file containing a list of schemas")
+	showHelp := flag.Bool("help", false, "Prints usage information")
+	extensionsFilePath := flag.String("extensions", "", "Path to XML file containing extensions")
+	folderExtensionsFilePath := flag.String("folders", "", "Path to XML file containing extensions with a folder structure")
+	schemasFilePath := flag.String("schemas", "", "Path to JSON file containing a list of schemas")
 	docTypesFilePath := flag.String("types", "", "Path to JSON file containing the document types")
 	flag.Parse()
 
 	sb := &strings.Builder{}
 
+	if *showHelp {
+		printDocumentation()
+		flag.Usage()
+		os.Exit(0)
+	}
+
 	if *extensionsFilePath != "" {
 		component := readComponent(*extensionsFilePath)
-		if err := GenerateHierarchy(sb, component); err != nil {
-			panic(err)
+		diagram := GenerateDocumentHierarchyFromComponent(component)
+		writeDiagram(*diagram)
+	} else if *folderExtensionsFilePath != "" {
+		component := readComponent(*folderExtensionsFilePath)
+		diagram := GenerateFolderStructureFromComponent(component)
+		if err := diagram.write(sb); err != nil {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
 		}
 	} else if *schemasFilePath != "" && *docTypesFilePath != "" {
-		schemas := readSchemas(*schemasFilePath)
 		docTypesResponse := readDocTypes(*docTypesFilePath)
-		renderOptions := (RenderOptions{
-			ExcludeOrphanSchemas: true,
-		})
-		if err := RenderSchemasAndDocTypes(sb, schemas, docTypesResponse.DocTypes, renderOptions); err != nil {
-			panic(err)
-		}
+		schemas := readSchemas(*schemasFilePath)
+		diagram := GenerateTypesWithFields(docTypesResponse, schemas)
+		writeDiagram(*diagram)
+		/*
+			renderOptions := (RenderOptions{
+				ExcludeOrphanSchemas: true,
+			})
+			if err := RenderSchemasAndDocTypes(sb, schemas, docTypesResponse.DocTypes, renderOptions); err != nil {
+				fmt.Fprint(os.Stderr, err)
+				os.Exit(1)
+			}
+		*/
 	} else if *schemasFilePath != "" {
 		schemas := readSchemas(*schemasFilePath)
 		if err := RenderDocSchemas(sb, schemas); err != nil {
-			panic(err)
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
 		}
 	} else if *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
-		if err := RenderDocTypes(sb, docTypesResponse.DocTypes); err != nil {
-			panic(err)
-		}
+		diagram := GenerateTypesWithFacetsAndSchemas(docTypesResponse)
+		writeDiagram(*diagram)
+		/*
+			if err := RenderDocTypes(sb, docTypesResponse.DocTypes); err != nil {
+				fmt.Fprint(os.Stderr, err)
+				os.Exit(1)
+			}
+		*/
 	} else {
+		printDocumentation()
 		flag.Usage()
 		os.Exit(1)
 	}

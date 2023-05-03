@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-type FieldSet map[string]string
+// type FieldSet map[string]string
+type FieldSet map[string]interface{}
 
 type RestSchema struct {
 	Name   string   `json:"name"`
@@ -13,13 +14,28 @@ type RestSchema struct {
 	Fields FieldSet `json:"fields"`
 }
 
+type SchemasResponse []RestSchema
+
 type RestDocType struct {
 	Parent  string   `json:"parent"`
 	Facets  []string `json:"facets"`
 	Schemas []string `json:"schemas"`
 }
 
-type DocTypesMap = map[string]RestDocType
+func (dt RestDocType) containsFacet(facet string) bool {
+	for _, f := range dt.Facets {
+		if f == facet {
+			return true
+		}
+	}
+	return false
+}
+
+func (dt RestDocType) isInvisible() bool {
+	return dt.containsFacet("HiddenInNavigation")
+}
+
+type DocTypesMap map[string]RestDocType
 
 type DocTypesResponse struct {
 	DocTypes DocTypesMap `json:"doctypes"`
@@ -36,7 +52,10 @@ func RenderSchema(sb *strings.Builder, schema RestSchema) error {
 		return err
 	}
 	for fieldName, fieldType := range schema.Fields {
-		if fieldType == "" {
+		switch fieldType.(type) {
+		case string:
+			fieldType = fieldType
+		default:
 			fieldType = "nested"
 		}
 		if _, err := sb.WriteString(fmt.Sprintf("   %s %s\n", fieldType, fieldName)); err != nil {
@@ -67,7 +86,7 @@ func RenderDoctype(sb *strings.Builder, name string, doctype RestDocType) error 
 
 func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType RestDocType) error {
 	for _, schemaName := range docType.Schemas {
-		if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", schemaName, docTypeName)); err != nil {
+		if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", docTypeName, schemaName)); err != nil {
 			return err
 		}
 	}

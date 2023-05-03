@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/xml"
-	"fmt"
-	"strings"
 )
 
 type Component struct {
@@ -36,22 +34,15 @@ type SubTypes struct {
 	Types []string `xml:"type"`
 }
 
-func ParseXML(filepath string) Component {
-	component := Component{}
-	str := "abc"
-	x := []byte(str)
-	xml.Unmarshal(x, &component)
-	return component
-}
-
-func GenerateFolderStructure(sb *strings.Builder, component Component) error {
+/*
+func WriteFolderStructureDiagram(sb *strings.Builder, component Component) error {
+	if _, err := sb.WriteString("@startuml docTypes\n\n"); err != nil {
+		return err
+	}
 	for _, e := range component.Extensions {
 		if len(e.DocTypes) == 0 {
 			// exclude components that are not schema related
 			continue
-		}
-		if _, err := sb.WriteString(fmt.Sprintf("extension: %s %s \n", e.Target, e.Point)); err != nil {
-			return err
 		}
 		for _, d := range e.DocTypes {
 			if _, err := sb.WriteString(fmt.Sprintf("class %s\n", d.Name)); err != nil {
@@ -63,6 +54,7 @@ func GenerateFolderStructure(sb *strings.Builder, component Component) error {
 					return err
 				}
 			}
+
 			for _, s := range d.Subtypes.Types {
 				if _, err := sb.WriteString(fmt.Sprintf("  - %s\n", s)); err != nil {
 					return err
@@ -70,36 +62,55 @@ func GenerateFolderStructure(sb *strings.Builder, component Component) error {
 			}
 		}
 	}
+	if _, err := sb.WriteString("@enduml"); err != nil {
+		return err
+	}
 	return nil
 }
 
-func GenerateHierarchy(sb *strings.Builder, component Component) error {
-	if _, err := sb.WriteString(component.Name); err != nil {
+func WriteDocumentHierarchy(sb *strings.Builder, component Component) error {
+	if _, err := sb.WriteString("@startuml studioDocTypes\n"); err != nil {
 		return err
 	}
 	for _, e := range component.Extensions {
 		if len(e.DocTypes) == 0 {
 			continue
 		}
-		if _, err := sb.WriteString(fmt.Sprintf("extension: %s %s \n", e.Target, e.Point)); err != nil {
-			return err
-		}
 		for _, d := range e.DocTypes {
-			// fmt.Printf("- %s / %s / %v\n", d.Name, d.Extends, d.Append)
-			if _, err := sb.WriteString(fmt.Sprintf("class %s\n", d.Name)); err != nil {
-				return err
-			}
-			if d.Extends != "" {
-				if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", d.Name, d.Extends)); err != nil {
+			if len(d.Subtypes.Types) == 0 {
+				if _, err := sb.WriteString(fmt.Sprintf("\nclass %s\n", d.Name)); err != nil {
+					return err
+				}
+			} else {
+				if _, err := sb.WriteString(fmt.Sprintf("\nclass %s {\n", d.Name)); err != nil {
+					return err
+				}
+
+				existing := make(map[string]bool)
+				for _, s := range d.Subtypes.Types {
+					_, exists := existing[s]
+					if exists {
+						continue
+					}
+					if _, err := sb.WriteString(fmt.Sprintf("  -%s\n", s)); err != nil {
+						return err
+					}
+				}
+				if _, err := sb.WriteString("}\n"); err != nil {
 					return err
 				}
 			}
-			for _, s := range d.Subtypes.Types {
-				if _, err := sb.WriteString(fmt.Sprintf("  - %s\n", s)); err != nil {
+
+			if d.Extends != "" {
+				if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", d.Extends, d.Name)); err != nil {
 					return err
 				}
 			}
 		}
 	}
+	if _, err := sb.WriteString("@enduml"); err != nil {
+		return err
+	}
 	return nil
 }
+*/
