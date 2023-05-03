@@ -1,3 +1,5 @@
+#!/usr/bin/env sh
+
 zipFile=$1
 project=$(basename $1 .zip)
 
@@ -33,4 +35,4 @@ nxplant -types $typesFile > $outDir/diagram-5-doctypes.pu
 
 rm -r $tmpDir
 
-java -jar ./bin/plantuml.jar -tpng $outDir
+java -jar ./plantuml.jar -tpng $outDir
