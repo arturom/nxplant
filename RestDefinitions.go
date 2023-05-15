@@ -35,6 +35,10 @@ func (dt RestDocType) isInvisible() bool {
 	return dt.containsFacet("HiddenInNavigation")
 }
 
+func (dt RestDocType) hasParent() bool {
+	return dt.Parent != "None!!!"
+}
+
 type DocTypesMap map[string]RestDocType
 
 type DocTypesResponse struct {
@@ -94,7 +98,7 @@ func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType Res
 }
 
 func RenderDocTypeParentRelation(sb *strings.Builder, name string, docType RestDocType) error {
-	if docType.Parent == "None!!!" {
+	if !docType.hasParent() {
 		return nil
 	}
 	if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", docType.Parent, name)); err != nil {

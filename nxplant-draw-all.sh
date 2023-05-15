@@ -27,7 +27,7 @@ curl -su Administrator:Administrator 'http://localhost:8080/nuxeo/api/v1/config/
 
 export PLANTUML_LIMIT_SIZE=20480
 
-nxplant -extensions $extensionsFile > $outDir/diagram-1-folder-structure.pu
+nxplant -extensions $extensionsFile > $outDir/diagram-1-custom-doctypes.pu
 nxplant -folders $extensionsFile > $outDir/diagram-2-folder-structure.pu
 nxplant -schemas $schemasFile -types $typesFile > $outDir/diagram-3-schemas-doctypes.pu
 nxplant -schemas $schemasFile > $outDir/diagram-4-schemas.pu

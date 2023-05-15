@@ -16,26 +16,6 @@ func GenerateFolderStructureFromComponent(c Component) *Diagram {
 			continue
 		}
 		for _, docType := range ext.DocTypes {
-			/*
-				class := Class{
-					Name:   docType.Name,
-					Fields: make([]Field, 0),
-				}
-				diagram.Classes = append(diagram.Classes, class)
-			*/
-
-			/*
-				if docType.Extends != "" {
-					rel := Relation{
-						From:   docType.Extends,
-						To:     docType.Name,
-						Label:  "extends",
-						Symbol: "..",
-					}
-					diagram.Relations = append(diagram.Relations, rel)
-				}
-			*/
-
 			for _, subType := range docType.Subtypes.Types {
 				searchKey := fmt.Sprintf("%s:%s", docType.Name, subType)
 				if _, found := existingRels[searchKey]; found {
@@ -132,7 +112,7 @@ func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *Diagram {
 		}
 		diagram.Classes = append(diagram.Classes, class)
 
-		if docType.Parent != "None!!!" {
+		if docType.hasParent() {
 			rel := Relation{
 				From: docType.Parent,
 				To:   name,
@@ -204,7 +184,7 @@ func GenerateTypesWithFields(docTypes DocTypesResponse, schemas SchemasResponse)
 
 		diagram.Classes = append(diagram.Classes, class)
 
-		if docType.Parent != "None!!!" {
+		if docType.hasParent() {
 			rel := Relation{
 				From: docType.Parent,
 				To:   name,
