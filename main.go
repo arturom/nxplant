@@ -7,6 +7,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/arturom/nxplant/diagrams"
+	components "github.com/arturom/nxplant/input/components/doctypes"
+	rest "github.com/arturom/nxplant/input/restapi/doctypes"
+	"github.com/arturom/nxplant/output/d2"
 )
 
 func readJsonFile(filePath string, obj interface{}) {
@@ -31,20 +36,20 @@ func readXmlFile(filePath string, obj interface{}) {
 	}
 }
 
-func readSchemas(filePath string) SchemasResponse {
-	schemas := make(SchemasResponse, 0)
+func readSchemas(filePath string) rest.SchemasResponse {
+	schemas := make(rest.SchemasResponse, 0)
 	readJsonFile(filePath, &schemas)
 	return schemas
 }
 
-func readDocTypes(filePath string) DocTypesResponse {
-	docTypesResponse := DocTypesResponse{}
+func readDocTypes(filePath string) rest.DocTypesResponse {
+	docTypesResponse := rest.DocTypesResponse{}
 	readJsonFile(filePath, &docTypesResponse)
 	return docTypesResponse
 }
 
-func readComponent(filePath string) Component {
-	component := Component{}
+func readComponent(filePath string) components.Component {
+	component := components.Component{}
 	readXmlFile(filePath, &component)
 	return component
 }
@@ -67,15 +72,15 @@ func printDocumentation() {
 	fmt.Fprintln(os.Stderr)
 }
 
-func writeDiagram(diagram PlantUMLDiagram, format string) {
+func writeDiagram(diagram diagrams.PlantUMLDiagram, format string) {
 	sb := &strings.Builder{}
 	if format == "plantuml" {
-		if err := diagram.writePlantuml(sb); err != nil {
+		if err := diagram.WritePlantuml(sb); err != nil {
 			fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
 		}
 	} else {
-		if err := WriteD2(diagram, sb); err != nil {
+		if err := d2.WriteD2(diagram, sb); err != nil {
 			fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
 		}
@@ -102,26 +107,26 @@ func main() {
 
 	if *extensionsFilePath != "" {
 		component := readComponent(*extensionsFilePath)
-		diagram := GenerateDocumentHierarchyFromComponent(component)
+		diagram := components.GenerateDocumentHierarchyFromComponent(component)
 		writeDiagram(*diagram, *outputFormat)
 	} else if *folderExtensionsFilePath != "" {
 		component := readComponent(*folderExtensionsFilePath)
-		diagram := GenerateFolderStructureFromComponent(component)
+		diagram := components.GenerateFolderStructureFromComponent(component)
 		writeDiagram(*diagram, *outputFormat)
 	} else if *schemasFilePath != "" && *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
 		schemas := readSchemas(*schemasFilePath)
-		diagram := GenerateTypesWithFields(docTypesResponse, schemas)
+		diagram := rest.GenerateTypesWithFields(docTypesResponse, schemas)
 		writeDiagram(*diagram, *outputFormat)
 	} else if *schemasFilePath != "" {
 		schemas := readSchemas(*schemasFilePath)
-		if err := RenderDocSchemas(sb, schemas); err != nil {
+		if err := rest.RenderDocSchemas(sb, schemas); err != nil {
 			fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
 		}
 	} else if *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
-		diagram := GenerateTypesWithFacetsAndSchemas(docTypesResponse)
+		diagram := rest.GenerateTypesWithFacetsAndSchemas(docTypesResponse)
 		writeDiagram(*diagram, *outputFormat)
 	} else {
 		printDocumentation()

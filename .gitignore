@@ -14,9 +14,12 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-bin
-input
+plantuml.jar
 nxplant
+
+# input types
+*.xml
+*.json
 
 # Output files
 *.pu

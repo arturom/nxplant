@@ -1,4 +1,4 @@
-package main
+package diagrams
 
 import (
 	"fmt"
@@ -27,11 +27,11 @@ func (f Field) write(sb *strings.Builder) error {
 }
 
 type Separation struct {
-	val string
+	Val string
 }
 
 func (s Separation) write(sb *strings.Builder) error {
-	if _, err := sb.WriteString(fmt.Sprintf("-- %s --\n", s.val)); err != nil {
+	if _, err := sb.WriteString(fmt.Sprintf("-- %s --\n", s.Val)); err != nil {
 		return err
 	}
 	return nil
@@ -40,11 +40,11 @@ func (s Separation) write(sb *strings.Builder) error {
 type Class struct {
 	Type    string
 	Name    string
-	content []Writable
+	Content []Writable
 }
 
 func (c *Class) hasFields() bool {
-	return len(c.content) > 0
+	return len(c.Content) > 0
 }
 
 func (c *Class) write(sb *strings.Builder) error {
@@ -59,7 +59,7 @@ func (c *Class) write(sb *strings.Builder) error {
 		if _, err := sb.WriteString(" {\n"); err != nil {
 			return err
 		}
-		for _, d := range c.content {
+		for _, d := range c.Content {
 			if err := d.write(sb); err != nil {
 				return err
 			}
@@ -100,7 +100,7 @@ type PlantUMLDiagram struct {
 	Relations []Relation
 }
 
-func (d *PlantUMLDiagram) writePlantuml(sb *strings.Builder) error {
+func (d *PlantUMLDiagram) WritePlantuml(sb *strings.Builder) error {
 	if _, err := sb.WriteString(fmt.Sprintf("@startuml \"%s\" \n\n", d.Name)); err != nil {
 		return err
 	}

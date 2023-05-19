@@ -1,11 +1,13 @@
-package main
+package d2
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/arturom/nxplant/diagrams"
 )
 
-func writeField(f Field, sb *strings.Builder) error {
+func writeField(f diagrams.Field, sb *strings.Builder) error {
 	if f.Type == "" {
 		if _, err := sb.WriteString(fmt.Sprintf("  %s %s\n", f.Char, f.Name)); err != nil {
 			return err
@@ -18,17 +20,17 @@ func writeField(f Field, sb *strings.Builder) error {
 	return nil
 }
 
-func writeWritable(w Writable, sb *strings.Builder) error {
+func writeWritable(w diagrams.Writable, sb *strings.Builder) error {
 	switch w.(type) {
-	case Field:
-		if err := writeField(w.(Field), sb); err != nil {
+	case diagrams.Field:
+		if err := writeField(w.(diagrams.Field), sb); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func writeClass(class Class, sb *strings.Builder) error {
+func writeClass(class diagrams.Class, sb *strings.Builder) error {
 	if _, err := sb.WriteString(fmt.Sprintf("%s: {\n", class.Name)); err != nil {
 		return err
 	}
@@ -36,7 +38,7 @@ func writeClass(class Class, sb *strings.Builder) error {
 		return err
 	}
 
-	for _, w := range class.content {
+	for _, w := range class.Content {
 		if err := writeWritable(w, sb); err != nil {
 			return err
 		}
@@ -48,14 +50,14 @@ func writeClass(class Class, sb *strings.Builder) error {
 	return nil
 }
 
-func writeRelationship(rel Relation, sb *strings.Builder) error {
+func writeRelationship(rel diagrams.Relation, sb *strings.Builder) error {
 	if _, err := sb.WriteString(fmt.Sprintf("%s -> %s\n", rel.From, rel.To)); err != nil {
 		return err
 	}
 	return nil
 }
 
-func WriteD2(diagram PlantUMLDiagram, sb *strings.Builder) error {
+func WriteD2(diagram diagrams.PlantUMLDiagram, sb *strings.Builder) error {
 	for _, class := range diagram.Classes {
 		if err := writeClass(class, sb); err != nil {
 			return err

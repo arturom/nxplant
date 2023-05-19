@@ -1,4 +1,4 @@
-package main
+package doctypes
 
 import (
 	"encoding/xml"
@@ -36,11 +36,11 @@ type ComponentDocType struct {
 	Facets   []NamedItem `xml:"facet"`
 }
 
-func (t ComponentDocType) isInvisible() bool {
-	return t.containsFacet("HiddenInNavigation")
+func (t ComponentDocType) IsInvisible() bool {
+	return t.ContainsFacet("HiddenInNavigation")
 }
 
-func (t ComponentDocType) containsFacet(facet string) bool {
+func (t ComponentDocType) ContainsFacet(facet string) bool {
 	for _, f := range t.Facets {
 		if f.Name == facet {
 			return true
@@ -53,7 +53,7 @@ type SubTypes struct {
 	Types []string `xml:"type"`
 }
 
-func (s SubTypes) containsSubType(subtype string) bool {
+func (s SubTypes) ContainsSubType(subtype string) bool {
 	for _, t := range s.Types {
 		if t == subtype {
 			return true

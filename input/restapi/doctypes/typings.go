@@ -1,4 +1,4 @@
-package main
+package doctypes
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ type RestDocType struct {
 	Schemas []string `json:"schemas"`
 }
 
-func (dt RestDocType) containsFacet(facet string) bool {
+func (dt RestDocType) ContainsFacet(facet string) bool {
 	for _, f := range dt.Facets {
 		if f == facet {
 			return true
@@ -31,11 +31,11 @@ func (dt RestDocType) containsFacet(facet string) bool {
 	return false
 }
 
-func (dt RestDocType) isInvisible() bool {
-	return dt.containsFacet("HiddenInNavigation")
+func (dt RestDocType) IsInvisible() bool {
+	return dt.ContainsFacet("HiddenInNavigation")
 }
 
-func (dt RestDocType) hasParent() bool {
+func (dt RestDocType) HasParent() bool {
 	return dt.Parent != "None!!!"
 }
 
@@ -98,7 +98,7 @@ func RenderDocTypeRelations(sb *strings.Builder, docTypeName string, docType Res
 }
 
 func RenderDocTypeParentRelation(sb *strings.Builder, name string, docType RestDocType) error {
-	if !docType.hasParent() {
+	if !docType.HasParent() {
 		return nil
 	}
 	if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", docType.Parent, name)); err != nil {

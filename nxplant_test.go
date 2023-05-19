@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/arturom/nxplant/input/restapi/doctypes"
 )
 
 func TestRenderSchema(t *testing.T) {
-	userSchema := RestSchema{
+	userSchema := doctypes.RestSchema{
 		Name:   "user",
 		Prefix: "user",
-		Fields: FieldSet{
+		Fields: doctypes.FieldSet{
 			"name":  "String",
 			"email": "String",
 		},
 	}
 	sb := &strings.Builder{}
-	err := RenderSchema(sb, userSchema)
+	err := doctypes.RenderSchema(sb, userSchema)
 	if err != nil {
 		t.Error(err)
 	}
