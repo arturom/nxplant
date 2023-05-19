@@ -6,7 +6,7 @@ import (
 	"github.com/arturom/nxplant/diagrams"
 )
 
-func GenerateFolderStructureFromComponent(c Component) *diagrams.PlantUMLDiagram {
+func GenerateFolderStructure(c Component) *diagrams.PlantUMLDiagram {
 	diag := &diagrams.PlantUMLDiagram{
 		Name:      "Folder Structure",
 		Classes:   make([]diagrams.Class, 0),
@@ -42,9 +42,9 @@ func GenerateFolderStructureFromComponent(c Component) *diagrams.PlantUMLDiagram
 	return diag
 }
 
-func GenerateDocumentHierarchyFromComponent(c Component) *diagrams.PlantUMLDiagram {
+func GenerateDocumentInheritance(c Component) *diagrams.PlantUMLDiagram {
 	diag := &diagrams.PlantUMLDiagram{
-		Name:      "Custom Document Types",
+		Name:      "Custom Document Type Inheritance",
 		Classes:   make([]diagrams.Class, 0),
 		Relations: make([]diagrams.Relation, 0),
 	}

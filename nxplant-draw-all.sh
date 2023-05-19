@@ -30,6 +30,7 @@ export PLANTUML_LIMIT_SIZE=20480
 nxplant -format d2 -extensions $extensionsFile > $outDir/diagram-1-custom-doctypes.d2
 nxplant -format d2 -folders $extensionsFile > $outDir/diagram-2-folder-structure.d2
 
+nxplant -format plantuml -structure $extensionsFile > $outDir/diagram-0-structure-templates.pu
 nxplant -format plantuml -extensions $extensionsFile > $outDir/diagram-1-custom-doctypes.pu
 nxplant -format plantuml -folders $extensionsFile > $outDir/diagram-2-folder-structure.pu
 nxplant -format plantuml -schemas $schemasFile -types $typesFile > $outDir/diagram-3-schemas-doctypes.pu

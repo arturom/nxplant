@@ -10,6 +10,7 @@ import (
 
 	"github.com/arturom/nxplant/diagrams"
 	components "github.com/arturom/nxplant/input/components/doctypes"
+	"github.com/arturom/nxplant/input/components/structuretemplate"
 	rest "github.com/arturom/nxplant/input/restapi/doctypes"
 	"github.com/arturom/nxplant/output/d2"
 )
@@ -48,6 +49,12 @@ func readDocTypes(filePath string) rest.DocTypesResponse {
 	return docTypesResponse
 }
 
+func readStructureTemplateComponent(filePath string) structuretemplate.Component {
+	component := structuretemplate.Component{}
+	readXmlFile(filePath, &component)
+	return component
+}
+
 func readComponent(filePath string) components.Component {
 	component := components.Component{}
 	readXmlFile(filePath, &component)
@@ -55,11 +62,6 @@ func readComponent(filePath string) components.Component {
 }
 
 func printDocumentation() {
-	// components folder structure
-	// components doc type inheritance
-	// rest doc type inheritance
-	// rest doc types and schemas
-	// rest doc types with fields
 	fmt.Fprintln(os.Stderr, "nxplant")
 	fmt.Fprintln(os.Stderr, "  A Diagram generator for a Nuxeo project data model")
 	fmt.Fprintln(os.Stderr)
@@ -91,6 +93,7 @@ func writeDiagram(diagram diagrams.PlantUMLDiagram, format string) {
 func main() {
 	showHelp := flag.Bool("help", false, "Prints usage information")
 	outputFormat := flag.String("format", "plantuml", "The diagram output format. Defaults to plantuml")
+	structureTemplateFilePath := flag.String("structure", "", "Path to XML file containing extensions")
 	extensionsFilePath := flag.String("extensions", "", "Path to XML file containing extensions")
 	folderExtensionsFilePath := flag.String("folders", "", "Path to XML file containing extensions with a folder structure")
 	schemasFilePath := flag.String("schemas", "", "Path to JSON file containing a list of schemas")
@@ -105,13 +108,17 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *extensionsFilePath != "" {
+	if *structureTemplateFilePath != "" {
+		scomponent := readStructureTemplateComponent(*structureTemplateFilePath)
+		diagram := structuretemplate.GenerateStructureTemplate(scomponent)
+		writeDiagram(*diagram, *outputFormat)
+	} else if *extensionsFilePath != "" {
 		component := readComponent(*extensionsFilePath)
-		diagram := components.GenerateDocumentHierarchyFromComponent(component)
+		diagram := components.GenerateDocumentInheritance(component)
 		writeDiagram(*diagram, *outputFormat)
 	} else if *folderExtensionsFilePath != "" {
 		component := readComponent(*folderExtensionsFilePath)
-		diagram := components.GenerateFolderStructureFromComponent(component)
+		diagram := components.GenerateFolderStructure(component)
 		writeDiagram(*diagram, *outputFormat)
 	} else if *schemasFilePath != "" && *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
