@@ -27,12 +27,21 @@ curl -su Administrator:Administrator 'http://localhost:8080/nuxeo/api/v1/config/
 
 export PLANTUML_LIMIT_SIZE=20480
 
-nxplant -extensions $extensionsFile > $outDir/diagram-1-custom-doctypes.pu
-nxplant -folders $extensionsFile > $outDir/diagram-2-folder-structure.pu
-nxplant -schemas $schemasFile -types $typesFile > $outDir/diagram-3-schemas-doctypes.pu
-nxplant -schemas $schemasFile > $outDir/diagram-4-schemas.pu
-nxplant -types $typesFile > $outDir/diagram-5-doctypes.pu
+nxplant -format d2 -extensions $extensionsFile > $outDir/diagram-1-custom-doctypes.d2
+nxplant -format d2 -folders $extensionsFile > $outDir/diagram-2-folder-structure.d2
+
+nxplant -format plantuml -extensions $extensionsFile > $outDir/diagram-1-custom-doctypes.pu
+nxplant -format plantuml -folders $extensionsFile > $outDir/diagram-2-folder-structure.pu
+nxplant -format plantuml -schemas $schemasFile -types $typesFile > $outDir/diagram-3-schemas-doctypes.pu
+nxplant -format plantuml -schemas $schemasFile > $outDir/diagram-4-schemas.pu
+nxplant -format plantuml -types $typesFile > $outDir/diagram-5-doctypes.pu
 
 rm -r $tmpDir
 
 java -jar ./plantuml.jar -tpng $outDir
+
+for f in $outDir/*.d2; do
+    filebase=$(basename $f .d2)
+    d2 "$f" $outDir/$filebase.png
+    d2 "$f" $outDir/$filebase.svg
+done

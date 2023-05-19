@@ -7,4 +7,6 @@ curl -sf http://goblin.barelyhuman.xyz/github.com/arturom/nxplant | sh
 curl -LO https://raw.githubusercontent.com/arturom/nxplant/main/nxplant-draw-all.sh
 chmod +x ./nxplant-draw-all.sh
 
+curl -fsSL https://d2lang.com/install.sh | sh -s --
+
 curl -LO https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar

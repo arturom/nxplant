@@ -67,17 +67,25 @@ func printDocumentation() {
 	fmt.Fprintln(os.Stderr)
 }
 
-func writeDiagram(diagram Diagram) {
+func writeDiagram(diagram PlantUMLDiagram, format string) {
 	sb := &strings.Builder{}
-	if err := diagram.write(sb); err != nil {
-		fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
+	if format == "plantuml" {
+		if err := diagram.writePlantuml(sb); err != nil {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
+	} else {
+		if err := WriteD2(diagram, sb); err != nil {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 	fmt.Print(sb.String())
 }
 
 func main() {
 	showHelp := flag.Bool("help", false, "Prints usage information")
+	outputFormat := flag.String("format", "plantuml", "The diagram output format. Defaults to plantuml")
 	extensionsFilePath := flag.String("extensions", "", "Path to XML file containing extensions")
 	folderExtensionsFilePath := flag.String("folders", "", "Path to XML file containing extensions with a folder structure")
 	schemasFilePath := flag.String("schemas", "", "Path to JSON file containing a list of schemas")
@@ -95,28 +103,16 @@ func main() {
 	if *extensionsFilePath != "" {
 		component := readComponent(*extensionsFilePath)
 		diagram := GenerateDocumentHierarchyFromComponent(component)
-		writeDiagram(*diagram)
+		writeDiagram(*diagram, *outputFormat)
 	} else if *folderExtensionsFilePath != "" {
 		component := readComponent(*folderExtensionsFilePath)
 		diagram := GenerateFolderStructureFromComponent(component)
-		if err := diagram.write(sb); err != nil {
-			fmt.Fprint(os.Stderr, err)
-			os.Exit(1)
-		}
+		writeDiagram(*diagram, *outputFormat)
 	} else if *schemasFilePath != "" && *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
 		schemas := readSchemas(*schemasFilePath)
 		diagram := GenerateTypesWithFields(docTypesResponse, schemas)
-		writeDiagram(*diagram)
-		/*
-			renderOptions := (RenderOptions{
-				ExcludeOrphanSchemas: true,
-			})
-			if err := RenderSchemasAndDocTypes(sb, schemas, docTypesResponse.DocTypes, renderOptions); err != nil {
-				fmt.Fprint(os.Stderr, err)
-				os.Exit(1)
-			}
-		*/
+		writeDiagram(*diagram, *outputFormat)
 	} else if *schemasFilePath != "" {
 		schemas := readSchemas(*schemasFilePath)
 		if err := RenderDocSchemas(sb, schemas); err != nil {
@@ -126,13 +122,7 @@ func main() {
 	} else if *docTypesFilePath != "" {
 		docTypesResponse := readDocTypes(*docTypesFilePath)
 		diagram := GenerateTypesWithFacetsAndSchemas(docTypesResponse)
-		writeDiagram(*diagram)
-		/*
-			if err := RenderDocTypes(sb, docTypesResponse.DocTypes); err != nil {
-				fmt.Fprint(os.Stderr, err)
-				os.Exit(1)
-			}
-		*/
+		writeDiagram(*diagram, *outputFormat)
 	} else {
 		printDocumentation()
 		flag.Usage()

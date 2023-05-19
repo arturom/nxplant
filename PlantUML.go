@@ -94,13 +94,13 @@ func (r *Relation) write(sb *strings.Builder) error {
 	return nil
 }
 
-type Diagram struct {
+type PlantUMLDiagram struct {
 	Name      string
 	Classes   []Class
 	Relations []Relation
 }
 
-func (d *Diagram) write(sb *strings.Builder) error {
+func (d *PlantUMLDiagram) writePlantuml(sb *strings.Builder) error {
 	if _, err := sb.WriteString(fmt.Sprintf("@startuml \"%s\" \n\n", d.Name)); err != nil {
 		return err
 	}

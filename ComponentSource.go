@@ -2,8 +2,8 @@ package main
 
 import "fmt"
 
-func GenerateFolderStructureFromComponent(c Component) *Diagram {
-	diagram := &Diagram{
+func GenerateFolderStructureFromComponent(c Component) *PlantUMLDiagram {
+	diagram := &PlantUMLDiagram{
 		Name:      "Folder Structure",
 		Classes:   make([]Class, 0),
 		Relations: make([]Relation, 0),
@@ -16,6 +16,9 @@ func GenerateFolderStructureFromComponent(c Component) *Diagram {
 			continue
 		}
 		for _, docType := range ext.DocTypes {
+			if docType.isInvisible() {
+				continue
+			}
 			for _, subType := range docType.Subtypes.Types {
 				searchKey := fmt.Sprintf("%s:%s", docType.Name, subType)
 				if _, found := existingRels[searchKey]; found {
@@ -35,8 +38,8 @@ func GenerateFolderStructureFromComponent(c Component) *Diagram {
 	return diagram
 }
 
-func GenerateDocumentHierarchyFromComponent(c Component) *Diagram {
-	diagram := &Diagram{
+func GenerateDocumentHierarchyFromComponent(c Component) *PlantUMLDiagram {
+	diagram := &PlantUMLDiagram{
 		Name:      "Custom Document Types",
 		Classes:   make([]Class, 0),
 		Relations: make([]Relation, 0),
@@ -48,6 +51,9 @@ func GenerateDocumentHierarchyFromComponent(c Component) *Diagram {
 			continue
 		}
 		for _, docType := range ext.DocTypes {
+			if docType.isInvisible() {
+				continue
+			}
 			class := Class{
 				Type:    "class",
 				Name:    docType.Name,
@@ -77,8 +83,8 @@ func GenerateDocumentHierarchyFromComponent(c Component) *Diagram {
 	return diagram
 }
 
-func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *Diagram {
-	diagram := &Diagram{
+func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *PlantUMLDiagram {
+	diagram := &PlantUMLDiagram{
 		Name:      "Document Types",
 		Classes:   make([]Class, 0),
 		Relations: make([]Relation, 0),
@@ -125,8 +131,8 @@ func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *Diagram {
 	return diagram
 }
 
-func GenerateTypesWithFields(docTypes DocTypesResponse, schemas SchemasResponse) *Diagram {
-	diagram := &Diagram{
+func GenerateTypesWithFields(docTypes DocTypesResponse, schemas SchemasResponse) *PlantUMLDiagram {
+	diagram := &PlantUMLDiagram{
 		Name:      "Document Types and Fields",
 		Classes:   make([]Class, 0),
 		Relations: make([]Relation, 0),

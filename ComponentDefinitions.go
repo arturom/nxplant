@@ -22,95 +22,42 @@ type ComponentSchema struct {
 	XMLName xml.Name `xml:"schema"`
 }
 
+type NamedItem struct {
+	Name string `xml:"name,attr"`
+}
+
 type ComponentDocType struct {
-	XMLName  xml.Name `xml:"doctype"`
-	Name     string   `xml:"name,attr"`
-	Extends  string   `xml:"extends,attr"`
-	Append   bool     `xml:"append,attr"`
-	Subtypes SubTypes `xml:"subtypes"`
+	XMLName  xml.Name    `xml:"doctype"`
+	Name     string      `xml:"name,attr"`
+	Extends  string      `xml:"extends,attr"`
+	Append   bool        `xml:"append,attr"`
+	Subtypes SubTypes    `xml:"subtypes"`
+	Schemas  []NamedItem `xml:"schema"`
+	Facets   []NamedItem `xml:"facet"`
+}
+
+func (t ComponentDocType) isInvisible() bool {
+	return t.containsFacet("HiddenInNavigation")
+}
+
+func (t ComponentDocType) containsFacet(facet string) bool {
+	for _, f := range t.Facets {
+		if f.Name == facet {
+			return true
+		}
+	}
+	return false
 }
 
 type SubTypes struct {
 	Types []string `xml:"type"`
 }
 
-/*
-func WriteFolderStructureDiagram(sb *strings.Builder, component Component) error {
-	if _, err := sb.WriteString("@startuml docTypes\n\n"); err != nil {
-		return err
-	}
-	for _, e := range component.Extensions {
-		if len(e.DocTypes) == 0 {
-			// exclude components that are not schema related
-			continue
-		}
-		for _, d := range e.DocTypes {
-			if _, err := sb.WriteString(fmt.Sprintf("class %s\n", d.Name)); err != nil {
-				return err
-			}
-			if d.Extends != "" {
-
-				if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", d.Name, d.Extends)); err != nil {
-					return err
-				}
-			}
-
-			for _, s := range d.Subtypes.Types {
-				if _, err := sb.WriteString(fmt.Sprintf("  - %s\n", s)); err != nil {
-					return err
-				}
-			}
+func (s SubTypes) containsSubType(subtype string) bool {
+	for _, t := range s.Types {
+		if t == subtype {
+			return true
 		}
 	}
-	if _, err := sb.WriteString("@enduml"); err != nil {
-		return err
-	}
-	return nil
+	return false
 }
-
-func WriteDocumentHierarchy(sb *strings.Builder, component Component) error {
-	if _, err := sb.WriteString("@startuml studioDocTypes\n"); err != nil {
-		return err
-	}
-	for _, e := range component.Extensions {
-		if len(e.DocTypes) == 0 {
-			continue
-		}
-		for _, d := range e.DocTypes {
-			if len(d.Subtypes.Types) == 0 {
-				if _, err := sb.WriteString(fmt.Sprintf("\nclass %s\n", d.Name)); err != nil {
-					return err
-				}
-			} else {
-				if _, err := sb.WriteString(fmt.Sprintf("\nclass %s {\n", d.Name)); err != nil {
-					return err
-				}
-
-				existing := make(map[string]bool)
-				for _, s := range d.Subtypes.Types {
-					_, exists := existing[s]
-					if exists {
-						continue
-					}
-					if _, err := sb.WriteString(fmt.Sprintf("  -%s\n", s)); err != nil {
-						return err
-					}
-				}
-				if _, err := sb.WriteString("}\n"); err != nil {
-					return err
-				}
-			}
-
-			if d.Extends != "" {
-				if _, err := sb.WriteString(fmt.Sprintf("%s <|-- %s\n", d.Extends, d.Name)); err != nil {
-					return err
-				}
-			}
-		}
-	}
-	if _, err := sb.WriteString("@enduml"); err != nil {
-		return err
-	}
-	return nil
-}
-*/
