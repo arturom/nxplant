@@ -4,8 +4,8 @@ import (
 	"github.com/arturom/nxplant/diagrams"
 )
 
-func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *diagrams.PlantUMLDiagram {
-	diagram := &diagrams.PlantUMLDiagram{
+func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *diagrams.Diagram {
+	diagram := &diagrams.Diagram{
 		Name:      "Document Types",
 		Classes:   make([]diagrams.Class, 0),
 		Relations: make([]diagrams.Relation, 0),
@@ -52,8 +52,8 @@ func GenerateTypesWithFacetsAndSchemas(docTypes DocTypesResponse) *diagrams.Plan
 	return diagram
 }
 
-func GenerateTypesWithFields(docTypes DocTypesResponse, schemas SchemasResponse) *diagrams.PlantUMLDiagram {
-	diagram := &diagrams.PlantUMLDiagram{
+func GenerateTypesWithFields(docTypes DocTypesResponse, schemas SchemasResponse) *diagrams.Diagram {
+	diagram := &diagrams.Diagram{
 		Name:      "Document Types and Fields",
 		Classes:   make([]diagrams.Class, 0),
 		Relations: make([]diagrams.Relation, 0),

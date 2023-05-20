@@ -6,8 +6,8 @@ import (
 	"github.com/arturom/nxplant/diagrams"
 )
 
-func GenerateFolderStructure(c Component) *diagrams.PlantUMLDiagram {
-	diag := &diagrams.PlantUMLDiagram{
+func GenerateFolderStructure(c Component) *diagrams.Diagram {
+	diag := &diagrams.Diagram{
 		Name:      "Folder Structure",
 		Classes:   make([]diagrams.Class, 0),
 		Relations: make([]diagrams.Relation, 0),
@@ -42,8 +42,8 @@ func GenerateFolderStructure(c Component) *diagrams.PlantUMLDiagram {
 	return diag
 }
 
-func GenerateDocumentInheritance(c Component) *diagrams.PlantUMLDiagram {
-	diag := &diagrams.PlantUMLDiagram{
+func GenerateDocumentInheritance(c Component) *diagrams.Diagram {
+	diag := &diagrams.Diagram{
 		Name:      "Custom Document Type Inheritance",
 		Classes:   make([]diagrams.Class, 0),
 		Relations: make([]diagrams.Relation, 0),

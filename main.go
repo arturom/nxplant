@@ -13,6 +13,7 @@ import (
 	"github.com/arturom/nxplant/input/components/structuretemplate"
 	rest "github.com/arturom/nxplant/input/restapi/doctypes"
 	"github.com/arturom/nxplant/output/d2"
+	"github.com/arturom/nxplant/output/plantuml"
 )
 
 func readJsonFile(filePath string, obj interface{}) {
@@ -74,10 +75,10 @@ func printDocumentation() {
 	fmt.Fprintln(os.Stderr)
 }
 
-func writeDiagram(diagram diagrams.PlantUMLDiagram, format string) {
+func writeDiagram(diagram diagrams.Diagram, format string) {
 	sb := &strings.Builder{}
 	if format == "plantuml" {
-		if err := diagram.WritePlantuml(sb); err != nil {
+		if err := plantuml.WritePlantuml(diagram, sb); err != nil {
 			fmt.Fprint(os.Stderr, err)
 			os.Exit(1)
 		}

@@ -1,3 +1,5 @@
+#!/usr/bin/env sh
+
 mkdir -p nxplant
 cd nxplant
 

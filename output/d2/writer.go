@@ -57,7 +57,7 @@ func writeRelationship(rel diagrams.Relation, sb *strings.Builder) error {
 	return nil
 }
 
-func WriteD2(diagram diagrams.PlantUMLDiagram, sb *strings.Builder) error {
+func WriteD2(diagram diagrams.Diagram, sb *strings.Builder) error {
 	for _, class := range diagram.Classes {
 		if err := writeClass(class, sb); err != nil {
 			return err

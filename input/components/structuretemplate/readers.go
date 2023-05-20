@@ -2,8 +2,8 @@ package structuretemplate
 
 import "github.com/arturom/nxplant/diagrams"
 
-func GenerateStructureTemplate(c Component) *diagrams.PlantUMLDiagram {
-	diag := &diagrams.PlantUMLDiagram{
+func GenerateStructureTemplate(c Component) *diagrams.Diagram {
+	diag := &diagrams.Diagram{
 		Name:      "Structure Templates",
 		Classes:   make([]diagrams.Class, 0),
 		Relations: make([]diagrams.Relation, 0),
